@@ -45,8 +45,7 @@ calc_pseudo <- function(data, analysis="other", cutoffs=NULL, poi=seq(0.3,0.9,0.
 landmark_filter_fusion_cancer <- function(s, dat, covars = c()){
   df.2risk.s <- dat %>%
     group_by(id2) %>%
-    mutate(tmp_entryinit = sum(entry * (from == 'init')),
-           entrycancer = sum(entry * (from == 'cancer')),
+    mutate(entrycancer = sum(entry * (from == 'cancer')),
            everHad2k = sum(from == 'cancer')) %>%
     ungroup() %>%
     filter(to != 'cancer', ti > s) %>%
@@ -55,8 +54,8 @@ landmark_filter_fusion_cancer <- function(s, dat, covars = c()){
     df.2risk.s, {
       event[to == 'cens'] <- 0
       Has2K <- (s >= entrycancer) & everHad2k
+      f_type_2k <- ifelse(Has2K, TypeSMN, "Hello")
       entry <- 0
-      tmp_entryinit <- NULL
       tmp_entrycancer <- NULL
   })
   for (covar in covars){
