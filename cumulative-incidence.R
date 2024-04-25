@@ -21,7 +21,13 @@ hardcoded_seed <- 7670
 load('fake_data.Rdata')
 load('imputed_values.Rdata')
 
-df.etm <- fake_data.etm
+df.etm <- within(fake_data.etm, {
+  ti <- exit
+  ageCancer <- as.numeric(as.character(ageCancer))
+  event <- ifelse(to == "cens", 0, ifelse(to == "cardio", 2, 1))
+  id2 <- id
+  TypeSMN <- factor(sample(c("Important", "Other"), replace = TRUE, size = length(exit)))
+})
 df.etm_birth <- within(df.etm, {
   ti <- ti + ageCancer; entry <- entry + ageCancer; exit <- exit + ageCancer
 })
@@ -95,13 +101,14 @@ add_smn_in_covs <- function(x, prefix = "", suffix = "", var = "Has2K"){
 
 ## When some covariates are imputed ####
 
-covars_config_raw <- list(
-  "Model adjusted for cumulative doses for RT (Gy) and CT (yes/no)" = c(
-    "CT", "sj_Gender", "sj_AgeDiag", "sj_rt_heart", "cutYearDiag"),
-  "Model adjusted for cumulative doses for RT (Gy) and CT (mg/m2)" = c(
-    "sj_Gender", "sj_AgeDiag", "sj_anthra", "sj_alkyl_noplatinum", "sj_platinum",
-    "sj_rt_brain", "sj_rt_neck", "sj_rt_heart", "cutYearDiag")
-)
+# covars_config_raw <- list(
+#   "Model adjusted for cumulative doses for RT (Gy) and CT (yes/no)" = c(
+#     "CT", "sj_Gender", "sj_AgeDiag", "sj_rt_heart", "cutYearDiag"),
+#   "Model adjusted for cumulative doses for RT (Gy) and CT (mg/m2)" = c(
+#     "sj_Gender", "sj_AgeDiag", "sj_anthra", "sj_alkyl_noplatinum", "sj_platinum",
+#     "sj_rt_brain", "sj_rt_neck", "sj_rt_heart", "cutYearDiag")
+# )
+covars_config_raw <- list("Some model" = c("CT", "cutYearDiag"))
 
 # create lists storing covariates combinations, when using imputed data
 covars_config_base <- add_smn_in_covs(covars_config_raw, var = "Has2K")
@@ -115,13 +122,14 @@ for (ind in seq_along(covars_config_split)){
 
 ## When no covariates are imputed ####
 
-covars_config_raw.null <- list(
-  "Univariable" = c(),
-  "Model adjusted for RT (yes/no) and CT (yes/no)" =
-    c('sj_Gender', 'RT', 'CT', "sj_AgeDiag", "cutYearDiag"),
-  "Model adjusted for RT (yes/no) and cumulative doses of CT (mg/m2)" = c(
-    'sj_Gender', 'RT', 'sj_AgeDiag', 'sj_anthra', 'sj_alkyl_noplatinum', 'sj_platinum', 'cutYearDiag')
-)
+# covars_config_raw.null <- list(
+#   "Univariable" = c(),
+#   "Model adjusted for RT (yes/no) and CT (yes/no)" =
+#     c('sj_Gender', 'RT', 'CT', "sj_AgeDiag", "cutYearDiag"),
+#   "Model adjusted for RT (yes/no) and cumulative doses of CT (mg/m2)" = c(
+#     'sj_Gender', 'RT', 'sj_AgeDiag', 'sj_anthra', 'sj_alkyl_noplatinum', 'sj_platinum', 'cutYearDiag')
+# )
+covars_config_raw.null <- list("Some model" = c("RT", "CT", "cutYearDiag"))
 covars_config_base.null <- add_smn_in_covs(covars_config_raw.null, var = "Has2K")
 for (ind in seq_along(covars_config_base.null)){
   attr(covars_config_base.null[[ind]], "name") <- names(covars_config_base.null)[ind]
